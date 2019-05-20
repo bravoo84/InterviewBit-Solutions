@@ -56,45 +56,30 @@ public class Stringoholics {
         return ans%M;
     }
 
-    void updateLcmMap(Map<Integer, Integer> m, Integer num){
+    
 
-        int i = 2;
+	/* We could use the property of lcm(a,b)= a*b/gcd(a,b). But the constraints of given problem
+	   do not allow to go for this method. Instead we do the following steps:
 
-        while(i<=num && i > 1){
-            int count = 0;
+	 1. We take out prime factors of every number and then take their multiplication. We use the same 
+		concept of a*b/gcd(a,b), but as a and b both are prime their gcd(a,b)=1.
 
-            while(num % i == 0){
-                count++;
-                num /= i;
-            }
-
-            if(count == 0){
-                i++;
-                continue;
-            }
-
-            if(m.containsKey(i)){
-                int v = m.get(i);
-                if(v < count){
-                    m.put(i,count);
-                }
-            }
-            else{
-                m.put(i,count);
-            }
-
-            i++;
-        }
-    }
+	 2. Now question is pow(2,3)=8 which is not prime, well it is taken care by only inserting count 
+		in map if its previous value is less than current count value. Hence, if both pow(2,2)=4 and pow(2,3)=8 
+		we will only put 8 in the map. 
+    */
+		
 
     long getLcm(ArrayList<Integer> lens){
 
         Map<Integer, Integer> m = new HashMap<>();
 
+		/* Prime factorisation*/
         for(Integer num : lens){
             updateLcmMap(m, num);
         }
 
+		/* gcd(a,b)= a*b/gcd(a,b) */
         long prod = 1;
         for(Map.Entry<Integer, Integer> entry : m.entrySet()){
 
@@ -109,14 +94,74 @@ public class Stringoholics {
         return prod % M;
     }
 
+
+	void updateLcmMap(Map<Integer, Integer> m, Integer num){
+
+		    int i = 2;
+
+		    while(i<=num && i > 1){
+		        int count = 0;
+			
+				/* i will always be a prime number*/
+		        while(num % i == 0){
+		            count++;
+		            num /= i;
+		        }
+
+		        if(count == 0){
+		            i++;
+		            continue;
+		        }
+
+				/* Step 2. Considering only pow(2,3) instead of both pow(2,3) and pow(2,2)*/
+
+		        if(m.containsKey(i)){
+		            int v = m.get(i);
+		            if(v < count){
+		                m.put(i,count);
+		            }
+		        }
+		        else{
+		            m.put(i,count);
+		        }
+
+		        i++;
+		    }
+	}
+
+	
     public int solve(ArrayList<String> A) {
 
         ArrayList<Integer> lens = new ArrayList<>();
 
         for(String t: A){
+
+			/*	maxLenSubString is a function based on KMP string search.
+			  	It is used to check that given substring has a prefix which is 
+			  	also a suffix. 
+				
+			  	The idea behind using such logic is to check whether the string 
+				has AA property or not. The reason to check this can be understood 
+				using following two cases:
+
+				1. Let us consider a normal scenario that a string is not of AA type. 
+				   Under such condition it is simple to find the number of rotation 
+				   needed. We get the original string when total number of bits rotated 
+				   is some multiple of length of string.
+
+				2. Now, suppose a string is of AA type. This time we have to only rotate 
+				   half of the string.
+				   
+				Thus, for case (2) we need to use KMP's "longest prefix which is also a 
+                suffix (lps)" concept.
+			*/
             int maxLen = maxLenSubString(t);
+
             int n = t.length();
 
+			/* If maxLen is half of total length i.e String is of AA type we reduce 
+               string length to n.
+            */
             if(n%(n-maxLen) == 0){
                 n -= maxLen;
             }
@@ -127,6 +172,8 @@ public class Stringoholics {
                 sum += i;
                 i++;
             }while(sum % ((long) n) != 0L);
+
+			/* Condition of while checks if sum is multiple of string length or not.*/
 
             lens.add(i-1);
         }
